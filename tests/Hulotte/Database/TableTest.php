@@ -22,13 +22,25 @@ class TableTest extends TestCase
     private $database;
 
     /**
+     * @var Table
+     */
+    private $table;
+
+    /**
      * @test
      * @covers \Hulotte\Database\Table::all
      */
     public function all(): void
     {
-        $this->database->expects($this->once())->method('query');
-        $this->getTable()->all();
+        $this->database->expects($this->once())->method('query')
+            ->willReturn([['id' => 1, 'name' => 'Sébastien'], ['id' => 2, 'name' => 'Elodie']]);
+        $this->getTable()->setEntity(Entity::class);
+        $results = $this->getTable()->all();
+
+        $this->assertIsArray($results);
+        $this->assertInstanceOf(Entity::class, $results[0]);
+        $this->assertSame('Sébastien', $results[0]->getName());
+        $this->assertSame('Elodie', $results[1]->getName());
     }
 
     /**
@@ -37,8 +49,13 @@ class TableTest extends TestCase
      */
     public function find(): void
     {
-        $this->database->expects($this->once())->method('prepare');
-        $this->getTable()->find(1);
+        $this->database->expects($this->once())->method('prepare')
+            ->willReturn(['id' => 1, 'name' => 'Sébastien']);
+        $this->getTable()->setEntity(Entity::class);
+        $result = $this->getTable()->find(1);
+
+        $this->assertInstanceOf(Entity::class, $result);
+        $this->assertSame('Sébastien', $result->getName());
     }
 
     /**
@@ -54,6 +71,10 @@ class TableTest extends TestCase
      */
     private function getTable(): Table
     {
-        return new Table($this->database);
+        if (!$this->table) {
+            $this->table = new Table($this->database);
+        }
+
+        return $this->table;
     }
 }
