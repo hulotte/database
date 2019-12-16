@@ -7,6 +7,7 @@ use PDOStatement;
 
 /**
  * Class Database
+ * @author Sébastien CLEMENT<s.clement@la-taniere.net>
  * @package Hulotte\Database
  */
 class Database

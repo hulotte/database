@@ -9,8 +9,9 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Class DatabaseTests
- * @package tests\Hulotte\Database
+ * @author Sébastien CLEMENT<s.clement@la-taniere.net>
  * @covers \Hulotte\Database\Database
+ * @package tests\Hulotte\Database
  */
 class DatabaseTest extends TestCase
 {
@@ -25,8 +26,8 @@ class DatabaseTest extends TestCase
     private $pdoStatement;
 
     /**
-     * @test
      * @covers \Hulotte\Database\Database::query
+     * @test
      */
     public function querySimple(): void
     {
@@ -38,8 +39,8 @@ class DatabaseTest extends TestCase
     }
 
     /**
-     * @test
      * @covers \Hulotte\Database\Database::query
+     * @test
      */
     public function queryWithFetchAll(): void
     {
@@ -51,8 +52,8 @@ class DatabaseTest extends TestCase
     }
 
     /**
-     * @test
      * @covers \Hulotte\Database\Database::query
+     * @test
      */
     public function queryWithUpdateInsertDeleteAndCreate(): void
     {
@@ -73,8 +74,8 @@ class DatabaseTest extends TestCase
     }
 
     /**
-     * @test
      * @covers \Santa\Database\Database::prepare
+     * @test
      */
     public function prepareSimple()
     {
@@ -87,8 +88,8 @@ class DatabaseTest extends TestCase
     }
 
     /**
-     * @test
      * @covers \Santa\Database\Database::prepare
+     * @test
      */
     public function prepareFetchAll()
     {
@@ -101,8 +102,8 @@ class DatabaseTest extends TestCase
     }
 
     /**
-     * @test
      * @covers \Santa\Database\Database::prepare
+     * @test
      */
     public function prepareWithUpdateInsertDelete()
     {
