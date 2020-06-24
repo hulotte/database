@@ -16,10 +16,11 @@
     "minimum-stability": "dev",
     "name": "hulotte/database",
     "require": {
-        "robmorgan/phinx": "dev-master"
+        "php": "7.4.0",
+        "robmorgan/phinx": "0.12.1"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "^3.0@dev",
-        "phpunit/phpunit": "^9.0@dev"
+        "squizlabs/php_codesniffer": "3.5.5",
+        "phpunit/phpunit": "9.2.5"
     }
 }
