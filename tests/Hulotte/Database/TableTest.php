@@ -35,6 +35,7 @@ class TableTest extends TestCase
         $this->database->expects($this->once())->method('query')
             ->willReturn([['id' => 1, 'name' => 'Sébastien'], ['id' => 2, 'name' => 'Elodie']]);
         $this->getTable()->setEntity(Entity::class);
+        $this->getTable()->setTable('test');
         $results = $this->getTable()->all();
 
         $this->assertIsArray($results);
@@ -52,6 +53,7 @@ class TableTest extends TestCase
         $this->database->expects($this->once())->method('prepare')
             ->willReturn(['id' => 1, 'name' => 'Sébastien']);
         $this->getTable()->setEntity(Entity::class);
+        $this->getTable()->setTable('test');
         $result = $this->getTable()->find(1);
 
         $this->assertInstanceOf(Entity::class, $result);

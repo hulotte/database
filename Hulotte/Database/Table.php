@@ -14,17 +14,17 @@ class Table
     /**
      * @var string
      */
-    protected $entity;
+    protected string $entity;
 
     /**
      * @var string
      */
-    protected $table;
+    protected string $table;
 
     /**
      * @var Database
      */
-    private $database;
+    private Database $database;
 
     /**
      * Table constructor
