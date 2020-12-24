@@ -8,7 +8,7 @@ namespace tests\Hulotte\Database;
  * @author Sébastien CLEMENT<s.clement@la-taniere.net>
  * @package tests\Hulotte\Database
  */
-class Entity
+class EntityTest
 {
     /**
      * @var int

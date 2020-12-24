@@ -9,7 +9,7 @@ use PDOStatement;
  * @author Sébastien CLEMENT<s.clement@la-taniere.net>
  * @package Hulotte\Database
  */
-class Table
+class Repository
 {
     /**
      * @var string
@@ -22,24 +22,18 @@ class Table
     protected string $table;
 
     /**
-     * @var Database
-     */
-    private Database $database;
-
-    /**
      * Table constructor
      * @param Database $database
      */
-    public function __construct(Database $database)
+    public function __construct(private Database $database)
     {
-        $this->database = $database;
     }
 
     /**
      * Select all entry on the table
-     * @return array|mixed|PDOStatement
+     * @return array|PDOStatement
      */
-    public function all()
+    public function all(): array|PDOStatement
     {
         return $this->query('SELECT * FROM ' . $this->table);
     }
@@ -47,9 +41,9 @@ class Table
     /**
      * Select on entry on the table search by his id
      * @param int $id
-     * @return array|mixed|PDOStatement
+     * @return array|PDOStatement
      */
-    public function find(int $id)
+    public function find(int $id): array|PDOStatement
     {
         return $this->query(
             'SELECT * FROM ' . $this->table . ' WHERE id = :id',
@@ -59,36 +53,12 @@ class Table
     }
 
     /**
-     * @param string $entity
+     * Returns the ID of the last inserted row or sequence value
+     * @return string
      */
-    public function setEntity(string $entity): void
+    public function getLastInsertId(): string
     {
-        $this->entity = $entity;
-    }
-
-    /**
-     * @param string $table
-     */
-    public function setTable(string $table): void
-    {
-        $this->table = $table;
-    }
-
-    /**
-     * Hydrate an object
-     * @param array $results
-     * @return mixed
-     */
-    private function hydrate(array $results)
-    {
-        $entity = new $this->entity();
-
-        foreach ($results as $param => $value) {
-            $methodName = 'set' . ucfirst($param);
-            $entity->$methodName($value);
-        }
-
-        return $entity;
+        return $this->database->getLastInsertId();
     }
 
     /**
@@ -96,14 +66,18 @@ class Table
      * @param string $statement
      * @param array|null $params
      * @param bool $one
-     * @return array|mixed
+     * @return mixed
      */
-    private function query(string $statement, ?array $params = null, bool $one = false)
+    public function query(string $statement, ?array $params = null, bool $one = false): mixed
     {
         if ($params) {
             $results = $this->database->prepare($statement, $params, $one);
         } else {
             $results = $this->database->query($statement, $one);
+        }
+
+        if ($results instanceof PDOStatement) {
+            return $results;
         }
 
         if ($one) {
@@ -117,5 +91,30 @@ class Table
         }
 
         return $entities;
+    }
+
+    /**
+     * @param string $entity
+     */
+    public function setEntity(string $entity): void
+    {
+        $this->entity = $entity;
+    }
+
+    /**
+     * Hydrate an object
+     * @param array $results
+     * @return mixed
+     */
+    private function hydrate(array $results): mixed
+    {
+        $entity = new $this->entity();
+
+        foreach ($results as $param => $value) {
+            $methodName = 'set' . ucfirst($param);
+            $entity->$methodName($value);
+        }
+
+        return $entity;
     }
 }

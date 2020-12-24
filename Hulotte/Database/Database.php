@@ -13,17 +13,20 @@ use PDOStatement;
 class Database
 {
     /**
-     * @var PDO
-     */
-    private PDO $pdo;
-
-    /**
      * Database constructor
      * @param PDO $pdo
      */
-    public function __construct(PDO $pdo)
+    public function __construct(private PDO $pdo)
     {
-        $this->pdo = $pdo;
+    }
+
+    /**
+     * Returns the ID of the last inserted row or sequence value
+     * @return string
+     */
+    public function getLastInsertId(): string
+    {
+        return $this->pdo->lastInsertId();
     }
 
     /**
@@ -31,9 +34,9 @@ class Database
      * @param string $statement
      * @param array $params
      * @param bool $one
-     * @return array|mixed|PDOStatement
+     * @return array|PDOStatement
      */
-    public function prepare(string $statement, array $params, bool $one = false)
+    public function prepare(string $statement, array $params, bool $one = false): array|PDOStatement
     {
         $query = $this->pdo->prepare($statement);
         $query->execute($params);
@@ -45,9 +48,9 @@ class Database
      * Launch a query
      * @param string $statement
      * @param bool $one
-     * @return array|mixed|PDOStatement
+     * @return array|PDOStatement
      */
-    public function query(string $statement, bool $one = false)
+    public function query(string $statement, bool $one = false): array|PDOStatement
     {
         $query = $this->pdo->query($statement);
 
@@ -59,16 +62,16 @@ class Database
      * @param string $statement
      * @param PDOStatement $query
      * @param bool $one
-     * @return array|mixed|PDOStatement
+     * @return array|PDOStatement
      */
-    private function launch(string $statement, PDOStatement $query, bool $one)
+    private function launch(string $statement, PDOStatement $query, bool $one): array|PDOStatement
     {
-        if (strpos($statement, 'UPDATE') === 0
-            || strpos($statement, 'INSERT') === 0
-            || strpos($statement, 'DELETE') === 0
-            || strpos($statement, 'CREATE') === 0
-        ) {
-            return $query;
+        $keyWords = ['UPDATE', 'INSERT', 'DELETE', 'CREATE'];
+
+        foreach ($keyWords as $keyWord) {
+            if (str_starts_with(strtoupper($statement), $keyWord)) {
+                return $query;
+            }
         }
 
         if ($one) {
