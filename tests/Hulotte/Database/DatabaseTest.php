@@ -2,9 +2,9 @@
 
 namespace tests\Hulotte\Database;
 
-use Hulotte\Database\Database;
 use PDO;
 use PDOStatement;
+use Hulotte\Database\Database;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -18,24 +18,30 @@ class DatabaseTest extends TestCase
     /**
      * @var PDO
      */
-    private $pdo;
+    private PDO $pdo;
 
     /**
      * @var PDOStatement
      */
-    private $pdoStatement;
+    private PDOStatement $pdoStatement;
 
     /**
      * @covers \Hulotte\Database\Database::query
      * @test
      */
-    public function querySimple(): void
+    public function query(): void
     {
-        $this->pdoStatement->expects($this->once())->method('fetch');
-        $this->pdo->expects($this->once())->method('query')
+        $this->pdoStatement->expects($this->once())
+            ->method('fetch')
+            ->willReturn([]);
+        $this->pdo->expects($this->once())
+            ->method('query')
             ->willReturn($this->pdoStatement);
 
-        $this->getDatabase()->query('SELECT * FROM table WHERE id = 1', true);
+        $database = new Database($this->pdo);
+        $results = $database->query('SELECT * FROM table WHERE id = 1', true);
+
+        $this->assertIsArray($results);
     }
 
     /**
@@ -44,109 +50,164 @@ class DatabaseTest extends TestCase
      */
     public function queryWithFetchAll(): void
     {
-        $this->pdoStatement->expects($this->once())->method('fetchAll');
-        $this->pdo->expects($this->once())->method('query')
+        $this->pdoStatement->expects($this->once())
+            ->method('fetchAll')
+            ->willReturn([]);
+        $this->pdo->expects($this->once())
+            ->method('query')
             ->willReturn($this->pdoStatement);
 
-        $this->getDatabase()->query('SELECT * FROM table');
+        $database = new Database($this->pdo);
+        $results = $database->query('SELECT * FROM table');
+
+        $this->assertIsArray($results);
+    }
+
+    /**
+     * @covers \Hulotte\Database\Database::query
+     * @dataProvider queryProvider
+     * @param string $statement
+     * @test
+     */
+    public function queryNotWithSelect(string $statement): void
+    {
+        $this->pdo->expects($this->once())
+            ->method('query')
+            ->willReturn($this->pdoStatement);
+
+        $database = new Database($this->pdo);
+        $result = $database->query($statement);
+
+        $this->assertInstanceOf(PDOStatement::class, $result);
     }
 
     /**
      * @covers \Hulotte\Database\Database::query
      * @test
      */
-    public function queryWithUpdateInsertDeleteAndCreate(): void
+    public function queryNotWithSelectMin(): void
     {
-        $this->pdo->expects($this->exactly(4))
+        $this->pdo->expects($this->once())
             ->method('query')
             ->willReturn($this->pdoStatement);
 
-        $database = $this->getDatabase();
-        $resultInsert = $database->query('INSERT INTO test (id, name) VALUES (1, "Riri")');
-        $resultUpdate = $database->query('UPDATE test SET name = "Fifi" WHERE id = 1');
-        $resultDelete = $database->query('DELETE test WHERE id = 1');
-        $resultCreate = $database->query('CREATE TABLE utilisateur (id INT PRIMARY KEY NOT NULL, nom VARCHAR(100))');
+        $database = new Database($this->pdo);
+        $result = $database->query('insert into tests (id, name) values (1, "Riri"))');
 
-        $this->assertInstanceOf(PDOStatement::class, $resultInsert);
-        $this->assertInstanceOf(PDOStatement::class, $resultUpdate);
-        $this->assertInstanceOf(PDOStatement::class, $resultDelete);
-        $this->assertInstanceOf(PDOStatement::class, $resultCreate);
+        $this->assertInstanceOf(PDOStatement::class, $result);
     }
 
     /**
-     * @covers \Santa\Database\Database::prepare
+     * @covers \Hulotte\Database\Database::prepare
      * @test
      */
-    public function prepareSimple()
+    public function prepare(): void
     {
-        $this->pdoStatement->expects($this->once())->method('execute');
-        $this->pdoStatement->expects($this->once())->method('fetch');
-        $this->pdo->expects($this->once())->method('prepare')
-            ->willReturn($this->pdoStatement);
-
-        $this->getDatabase()->prepare('SELECT * FROM table WHERE id = :id', [':id' => 1], true);
-    }
-
-    /**
-     * @covers \Santa\Database\Database::prepare
-     * @test
-     */
-    public function prepareFetchAll()
-    {
-        $this->pdoStatement->expects($this->once())->method('execute');
-        $this->pdoStatement->expects($this->once())->method('fetchAll');
-        $this->pdo->expects($this->once())->method('prepare')
-            ->willReturn($this->pdoStatement);
-
-        $this->getDatabase()->prepare('SELECT * FROM table WHERE id = :id', [':id' => 1]);
-    }
-
-    /**
-     * @covers \Santa\Database\Database::prepare
-     * @test
-     */
-    public function prepareWithUpdateInsertDelete()
-    {
-        $this->pdoStatement->expects($this->exactly(3))
+        $this->pdoStatement->expects($this->once())
             ->method('execute');
-        $this->pdo->expects($this->exactly(3))
+        $this->pdoStatement->expects($this->once())
+            ->method('fetch')
+            ->willReturn([]);
+        $this->pdo->expects($this->once())
             ->method('prepare')
             ->willReturn($this->pdoStatement);
 
-        $database = $this->getDatabase();
-        $resultInsert = $database->prepare(
-            'INSERT INTO test (id, name) VALUES (:id, :name)',
-            [':id' => 1, ':name' => 'Sébastien']
-        );
-        $resultUpdate = $database->prepare(
-            'UPDATE test SET name = :name WHERE id = :id',
-            [':id' => 1, ':name' => 'Sébastien']
-        );
-        $resultDelete = $database->prepare(
-            'DELETE test WHERE id = :id',
-            [':id' => 1]
-        );
+        $database = new Database($this->pdo);
+        $results = $database->prepare('SELECT * FROM table WHERE id = :id', [':id' => 1], true);
 
-        $this->assertInstanceOf(PDOStatement::class, $resultInsert);
-        $this->assertInstanceOf(PDOStatement::class, $resultUpdate);
-        $this->assertInstanceOf(PDOStatement::class, $resultDelete);
+        $this->assertIsArray($results);
     }
 
     /**
-     * Initialize PDO and PDOStatement mock
+     * @covers \Hulotte\Database\Database::prepare
+     * @test
      */
+    public function prepareFetchAll(): void
+    {
+        $this->pdoStatement->expects($this->once())
+            ->method('execute');
+        $this->pdoStatement->expects($this->once())
+            ->method('fetchAll')
+            ->willReturn([]);
+        $this->pdo->expects($this->once())
+            ->method('prepare')
+            ->willReturn($this->pdoStatement);
+
+        $database = new Database($this->pdo);
+        $results = $database->prepare('SELECT * FROM table WHERE id = :id', [':id' => 1]);
+
+        $this->assertIsArray($results);
+    }
+
+    /**
+     * @covers \Hulotte\Database\Database::prepare
+     * @dataProvider prepareProvider
+     * @param string $statement
+     * @param array $params
+     * @test
+     */
+    public function prepareNotWithSelect(string $statement, array $params): void
+    {
+        $this->pdoStatement->expects($this->once())
+            ->method('execute');
+        $this->pdo->expects($this->once())
+            ->method('prepare')
+            ->willReturn($this->pdoStatement);
+
+        $database = new Database($this->pdo);
+        $result = $database->prepare($statement, $params);
+
+        $this->assertInstanceOf(PDOStatement::class, $result);
+    }
+
+    /**
+     * @covers \Hulotte\Database\Database::getLastInsertId
+     * @test
+     */
+    public function getLastInsertId(): void
+    {
+        $this->pdo->expects($this->once())
+            ->method('lastInsertId')
+            ->willReturn('');
+        $database = new Database($this->pdo);
+        $result = $database->getLastInsertId();
+
+        $this->assertIsString($result);
+    }
+
+    /**
+     * Data providers for query tests
+     * @return string[][]
+     */
+    public function queryProvider(): array
+    {
+        return [
+            ['statement' => 'INSERT INTO tests (id, name) VALUES (1, "Riri"))'],
+            ['statement' => 'UPDATE test SET name = "Fifi" WHERE id = 1)'],
+            ['statement' => 'DELETE test WHERE id = 1'],
+            ['statement' => 'CREATE TABLE utilisateur (id INT PRIMARY KEY NOT NULL, nom VARCHAR(100))'],
+        ];
+    }
+
+    /**
+     * Data providers for prepare tests
+     * @return array[]
+     */
+    public function prepareProvider(): array
+    {
+        return [
+            [
+                'statement' => 'INSERT INTO test (id, name) VALUES (:id, :name)',
+                'params' => [':id' => 1, ':name' => 'Riri']
+            ],
+            ['statement' => 'UPDATE test SET name = :name WHERE id = :id', 'params' => [':id' => 2, ':name' => 'Fifi']],
+            ['statement' => 'DELETE test WHERE id = :id', 'params' => [':id' => 1]],
+        ];
+    }
+
     protected function setUp(): void
     {
-        $this->pdo = $this->createMock(PDO::class);
         $this->pdoStatement = $this->createMock(PDOStatement::class);
-    }
-
-    /**
-     * Initialize Database object with pdo mock
-     * @return Database
-     */
-    private function getDatabase(): Database
-    {
-        return new Database($this->pdo);
+        $this->pdo = $this->createMock(PDO::class);
     }
 }
