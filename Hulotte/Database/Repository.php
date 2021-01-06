@@ -31,9 +31,9 @@ class Repository
 
     /**
      * Select all entry on the table
-     * @return array|PDOStatement
+     * @return mixed
      */
-    public function all(): array|PDOStatement
+    public function all(): mixed
     {
         return $this->query('SELECT * FROM ' . $this->table);
     }
@@ -41,9 +41,9 @@ class Repository
     /**
      * Select on entry on the table search by his id
      * @param int $id
-     * @return array|PDOStatement
+     * @return mixed
      */
-    public function find(int $id): array|PDOStatement
+    public function find(int $id): mixed
     {
         return $this->query(
             'SELECT * FROM ' . $this->table . ' WHERE id = :id',
